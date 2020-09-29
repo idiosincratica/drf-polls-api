@@ -35,6 +35,7 @@ class Question(models.Model):
         2: 'Single choice',
         3: 'Multiple choices'
     }
+
     poll = models.ForeignKey(Poll, related_name='questions', on_delete=models.CASCADE)
     text = models.CharField('Question text', max_length=256)
     type = models.PositiveSmallIntegerField('Type', choices=list(types.items()))

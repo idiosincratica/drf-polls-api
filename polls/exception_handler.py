@@ -4,7 +4,9 @@ from rest_framework.response import Response
 
 
 def custom_exception_handler(exc, context):
-    """Makes error codes available in response"""
+    """
+    Makes error codes available in response
+    """
 
     if isinstance(exc, APIException):
         headers = {}

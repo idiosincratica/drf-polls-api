@@ -11,6 +11,7 @@ class TextResponseSerializer(serializers.ModelSerializer):
     class Meta:
         model = TextResponse
         fields = ['user', 'question', 'text']
+
         validators = [
             UniqueTogetherValidator(
                 queryset=TextResponse.objects.all(),
@@ -33,6 +34,7 @@ class SingleChoiceResponseSerializer(serializers.ModelSerializer):
     class Meta:
         model = SingleChoiceResponse
         fields = ['user', 'choice']
+
         validators = [
             UniqueTogetherValidator(
                 queryset=SingleChoiceResponse.objects.all(),
@@ -47,6 +49,7 @@ class SingleChoiceResponseSerializer(serializers.ModelSerializer):
 
     def validate_single_choice_per_question(self, user, question):
         response = SingleChoiceResponse.objects.filter(user=user, question=question).first()
+
         if response is not None:
             raise serializers.ValidationError('The referred question can have only one response',
                                               error_codes.QUESTION_MULTIPLE_RESPONSES)
@@ -60,6 +63,7 @@ class SingleChoiceResponseSerializer(serializers.ModelSerializer):
         validate_referred_poll_active(data['question'].poll)
         self.validate_single_choice_per_question(data['user'], data['question'])
         self.validate_question_type(data['question'])
+
         return data
 
 
@@ -72,6 +76,7 @@ class MultipleChoicesResponseSerializer(serializers.Serializer):
             user = User.objects.get(pk=user)
         except User.DoesNotExist:
             raise serializers.ValidationError({"user": "User does not exist"}, error_codes.USER_DOES_NOT_EXIST)
+
         return user
 
     def create_choices(self, choices):
@@ -93,6 +98,7 @@ class MultipleChoicesResponseSerializer(serializers.Serializer):
 
     def validate_singular_question(self, choice_objects):
         questions = {choice.question_id for choice in choice_objects}
+
         if len(questions) > 1:
             raise serializers.ValidationError(
                 {'choices': f'All choices must refer to one question. Referred questions: {render_list(questions)}'},
@@ -100,6 +106,7 @@ class MultipleChoicesResponseSerializer(serializers.Serializer):
 
     def validate_question_responded(self, user, question):
         responses = MultipleChoicesResponse.objects.filter(user=user, choice__question=question)
+
         if len(responses) > 0:
             choice_ids = [response.choice_id for response in responses]
             raise serializers.ValidationError(
@@ -113,11 +120,14 @@ class MultipleChoicesResponseSerializer(serializers.Serializer):
 
     def to_internal_value(self, data):
         data = super().to_internal_value(data)
+
         user = self.create_user(data['user'])
         choices = data['choices']
+
         self.validate_empty_choices(choices)
         choice_objects = self.create_choices(choices)
         self.validate_choices_existence(choices, choice_objects)
+
         return {
             'user': user,
             'choices': choice_objects
@@ -130,16 +140,19 @@ class MultipleChoicesResponseSerializer(serializers.Serializer):
         validate_referred_poll_active(question.poll)
         self.validate_question_type(question)
         self.validate_question_responded(data['user'], question)
+
         return data
 
     def create(self, validated_data):
         user = validated_data['user']
         responses = [MultipleChoicesResponse(user=user, choice=choice) for choice in validated_data['choices']]
         saved = []
+
         try:
             for response in responses:
                 response.save()
                 saved.append(response.choice_id)
         except IntegrityError:
             raise APIException('Integrity error', error_codes.DB_INTEGRITY_ERROR)
+
         return {"user": user.id, "choices": saved}

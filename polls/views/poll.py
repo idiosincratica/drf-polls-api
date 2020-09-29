@@ -34,23 +34,30 @@ class PollRetrieveUpdateDestroy(AtomicUpdateMixin, generics.RetrieveUpdateDestro
 
 
 class BasePollRespondedListView(generics.ListAPIView, RequestParamObjectMixin):
-    """Collect data for construction of querysets that provide finish and unfinished polls"""
+    """
+    Collect data for construction of querysets that provide finish and unfinished polls
+    """
     serializer_class = PollFinishedListSerializer
 
-    """Select all the polls that have been responded by the user, completely or partially"""
     def get_user_polls_query(self, user):
+        """
+        Select all the polls that have been responded by the user, completely or partially
+        """
         return Poll.objects.filter(Q(questions__text_responses__user=user)
                                    | Q(questions__choices__single_choice_responses__user=user)
                                    | Q(questions__choices__multiple_choices_responses__user=user))
 
     def get_no_response_subquery(self, user):
-        """Select all the questions with no response"""
+        """
+        Select all the questions with no response
+        """
         return Question.objects.filter(poll=OuterRef('pk')).exclude(Q(choices__single_choice_responses__user=user)
                                        | Q(choices__multiple_choices_responses__user=user)
                                              | Q(text_responses__user=user))
 
     def get_query_elements(self):
         user = self.get_object_from_param('user', User)
+
         return {
             'user': user,
             'user_polls_query': self.get_user_polls_query(user),
@@ -59,21 +66,25 @@ class BasePollRespondedListView(generics.ListAPIView, RequestParamObjectMixin):
 
 
 class PollFinishedListView(BasePollRespondedListView):
-    """Polls with every question being responded by the user"""
+    """
+    Polls with every question being responded by the user
+    """
 
     def get_queryset(self):
         elements = self.get_query_elements()
 
-        """exclude polls that have questions with no response"""
+        # exclude polls that have questions with no response
         return elements['user_polls_query'].exclude(Exists(elements['no_response_subquery'])).distinct()
 
 
 class PollUnfinishedListView(PollFinishedListView):
-    """Polls that have some questions not responded by the user"""
+    """
+    Polls that have some questions not responded by the user
+    """
 
     def get_queryset(self):
         elements = self.get_query_elements()
 
-        """Keep only the polls having questions not responded by the user"""
+        # Keep only the polls having questions not responded by the user
         return elements['user_polls_query'].filter(Exists(elements['no_response_subquery'])).distinct()
 

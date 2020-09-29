@@ -5,11 +5,10 @@ from .helpers import poll_started
 from django.db import transaction
 
 
-
 class IsAdminMixin:
     def is_admin(self):
-        user = None
         request = self.context.get("request")
+
         if request and hasattr(request, "user"):
             return request.user.is_staff
         else:
@@ -18,7 +17,9 @@ class IsAdminMixin:
 
 class RequestParamObjectMixin:
     def get_object_from_param(self, param_name, model):
-        """retrieves an object from url query param"""
+        """
+        retrieves an object from url query param
+        """
         id = self.request.query_params.get(param_name, None)
 
         if id is None:
@@ -56,7 +57,9 @@ class DestroyStartedMixin:
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
+
         if poll_started(self.destroy_started[0](instance)):
             raise ParseError(self.destroy_started[1])
+
         self.perform_destroy(instance)
         return Response(status=status.HTTP_204_NO_CONTENT)
