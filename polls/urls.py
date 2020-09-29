@@ -1,8 +1,10 @@
 from django.urls import path
+from django.http import JsonResponse
 from rest_framework.authtoken import views
-from .views import poll, question, choice, response, user
+from .views import default, poll, question, choice, response, user
 
 urlpatterns = [
+    path('', default.default, name='default'),
     path('token', views.obtain_auth_token, name='token'),
     path('user', user.UserCreate.as_view(), name='user'),
     path('polls', poll.PollList.as_view(), name='polls'),

@@ -1,9 +1,12 @@
-# django-drf-polls
-# Инструкция по разворачиванию приложения локально
+# drf-polls-api
+# Инструкция по разворачиванию приложения локально (Windows)
 Установить *Python*.  
 Создать виртуальное пространство.  
 Установить *Django*, *Django REST framework* (можно из `requirements.txt` или с помощью *Poetry*).  
-Запустить миграцию БД (приложение создавалось и тестировалось на *SQLite*).  
+Запустить миграцию БД (приложение создавалось и тестировалось на *SQLite*).
+
+    python manage.py migrate
+
 Создать суперпользователя:
 
     python manage.py createsuperuser --username=<username> --email=<email>

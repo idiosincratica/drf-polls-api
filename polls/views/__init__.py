@@ -1,1 +1,1 @@
-__all__ = ['poll', 'question', 'choice', 'response', 'user']
+__all__ = ['default', 'poll', 'question', 'choice', 'response', 'user']
