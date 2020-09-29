@@ -93,7 +93,7 @@ class MultipleChoicesResponseTests(APITestCase):
         response = self.client.post(url, data)
         self.assertContains(response, f'All choices must refer to one question. Referred questions: 5, 6', status_code=400)
 
-    def test_duplication(self):
+    def test_question_already_set(self):
         populate_db()
         User().save()
         data = {
@@ -104,10 +104,10 @@ class MultipleChoicesResponseTests(APITestCase):
         response = self.client.post(url, data)
         data = {
             "user": 1,
-            "choices": [5, 6]
+            "choices": [6]
         }
         response = self.client.post(url, data)
-        self.assertContains(response, f'Some choices are already set: 5', status_code=400)
+        self.assertContains(response, f'Some choices are already set for the referred question: 5', status_code=400)
 
     def test_question_type(self):
         populate_db()

@@ -98,12 +98,13 @@ class MultipleChoicesResponseSerializer(serializers.Serializer):
                 {'choices': f'All choices must refer to one question. Referred questions: {render_list(questions)}'},
                 error_codes.MULTIPLE_QUESTIONS_REFERRED)
 
-    def validate_duplication(self, user, choice_objects):
-        responses = MultipleChoicesResponse.objects.filter(user=user, choice__in=choice_objects)
+    def validate_question_responded(self, user, question):
+        responses = MultipleChoicesResponse.objects.filter(user=user, choice__question=question)
         if len(responses) > 0:
             choice_ids = [response.choice_id for response in responses]
-            raise serializers.ValidationError({'choices': f'Some choices are already set: {render_list(choice_ids)}'},
-                                              error_codes.CHOICE_ALREADY_SET)
+            raise serializers.ValidationError(
+                {'choices': f'Some choices are already set for the referred question: {render_list(choice_ids)}'},
+                                              error_codes.QUESTION_ALREADY_RESPONDED)
 
     def validate_question_type(self, question):
         if question.type != 3:
@@ -128,7 +129,7 @@ class MultipleChoicesResponseSerializer(serializers.Serializer):
         question = choices[0].question
         validate_referred_poll_active(question.poll)
         self.validate_question_type(question)
-        self.validate_duplication(data['user'], choices)
+        self.validate_question_responded(data['user'], question)
         return data
 
     def create(self, validated_data):
@@ -140,5 +141,5 @@ class MultipleChoicesResponseSerializer(serializers.Serializer):
                 response.save()
                 saved.append(response.choice_id)
         except IntegrityError:
-            raise APIException(f'Integrity error. Saved choices: {render_list(saved)}', error_codes.DB_INTEGRITY_ERROR)
+            raise APIException('Integrity error', error_codes.DB_INTEGRITY_ERROR)
         return {"user": user.id, "choices": saved}
