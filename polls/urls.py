@@ -1,5 +1,4 @@
 from django.urls import path
-from django.http import JsonResponse
 from rest_framework.authtoken import views
 from .views import default, poll, question, choice, response, user
 
