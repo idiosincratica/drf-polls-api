@@ -2,7 +2,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import APIException
 from rest_framework.validators import UniqueTogetherValidator
 from django.db.utils import IntegrityError
-from ..models import TextResponse, SingleChoiceResponse, MultipleChoicesResponse, Choice, User
+from ..models import TextResponse, SingleChoiceResponse, MultipleChoicesResponse, Choice, User, Question
 from ..helpers import validate_referred_poll_active, render_list
 from polls import error_codes
 
@@ -20,7 +20,7 @@ class TextResponseSerializer(serializers.ModelSerializer):
         ]
 
     def validate_question_type(self, question):
-        if question.type != 1:
+        if question.type != Question.Types.TEXT:
             raise serializers.ValidationError({'question': 'Question must be of type 1'},
                                               error_codes.WRONG_QUESTION_TYPE)
 
@@ -55,7 +55,7 @@ class SingleChoiceResponseSerializer(serializers.ModelSerializer):
                                               error_codes.QUESTION_MULTIPLE_RESPONSES)
 
     def validate_question_type(self, question):
-        if question.type != 2:
+        if question.type != Question.Types.SINGLE_CHOICE:
             raise serializers.ValidationError({'choice': 'Choice must refer to a question of type 2'},
                                               error_codes.WRONG_QUESTION_TYPE)
 
@@ -114,7 +114,7 @@ class MultipleChoicesResponseSerializer(serializers.Serializer):
                                               error_codes.QUESTION_ALREADY_RESPONDED)
 
     def validate_question_type(self, question):
-        if question.type != 3:
+        if question.type != Question.Types.MULTIPLE_CHOICES:
             raise serializers.ValidationError({'choices': 'The referred question must be of type 3'},
                                               error_codes.WRONG_QUESTION_TYPE)
 

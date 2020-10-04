@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
-from ..models import Choice
+from ..models import Choice, Question
 from ..helpers import poll_started
 from polls import error_codes
 
@@ -25,7 +25,7 @@ class ChoiceSerializer(serializers.ModelSerializer):
         return super().update(instance, validated_data)
 
     def validate_question(self, question):
-        if question.type not in (2, 3):
+        if question.type not in (Question.Types.SINGLE_CHOICE, Question.Types.MULTIPLE_CHOICES):
             raise serializers.ValidationError("Can't add choice to question of type text",
                                               error_codes.WRONG_QUESTION_TYPE)
 

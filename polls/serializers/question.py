@@ -24,7 +24,8 @@ class QuestionSerializer(serializers.ModelSerializer, IsAdminMixin):
                                               error_codes.POLL_STARTED)
 
         # deletes related choices if setting question type to text
-        if 'type' in validated_data and instance.type != validated_data['type'] and validated_data['type'] == 1:
+        if 'type' in validated_data and instance.type != validated_data['type']\
+                and validated_data['type'] == Question.Types.TEXT:
             instance.choices.all().delete()
 
         return super().update(instance, validated_data)
@@ -42,7 +43,7 @@ class QuestionSerializer(serializers.ModelSerializer, IsAdminMixin):
 
         result = super().to_representation(instance)
 
-        if instance.type in (2, 3):
+        if instance.type in (Question.Types.SINGLE_CHOICE, Question.Types.MULTIPLE_CHOICES):
             result['choices'] = Choice.objects.filter(question=instance).values('id', 'text')
 
         return result
@@ -62,19 +63,19 @@ class QuestionFinishedSerializer(serializers.ModelSerializer):
     def get_response(self, question):
         user = self.context['request'].query_params.get('user', None)
 
-        if question.type == 1:
+        if question.type == Question.Types.TEXT:
             obj = TextResponse.objects.filter(question=question, user=user).first()
             if obj is None:
                 return None
             return obj.text
 
-        elif question.type == 2:
+        elif question.type == Question.Types.SINGLE_CHOICE:
             obj = Choice.objects.filter(question=question, single_choice_responses__user=user).first()
             if obj is None:
                 return None
             return obj.text
 
-        elif question.type == 3:
+        elif question.type == Question.Types.MULTIPLE_CHOICES:
             objects = Choice.objects.filter(question=question, multiple_choices_responses__user=user).all()
             if len(objects) == 0:
                 return None

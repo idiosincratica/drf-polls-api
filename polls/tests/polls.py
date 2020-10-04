@@ -64,10 +64,13 @@ class PollsTests(APITestCase):
         self.assertEqual(response.data, [])
 
     def test_active_polls_exist(self):
+        today = localdate()
+        start = str(today - timedelta(days=5))
+        end = str(today + timedelta(days=10))
         data = {
             "name": "Some poll",
-            "start": "2020-09-01",
-            "end": "2020-10-03",
+            "start": start,
+            "end": end,
             "description": "jj"
         }
         Poll(**data).save()
@@ -77,8 +80,8 @@ class PollsTests(APITestCase):
         self.assertEqual(response.data, [{
             "id": 1,
             "name": "Some poll",
-            "start": "2020-09-01",
-            "end": "2020-10-03",
+            "start": start,
+            "end": end,
             "description": "jj"
         }])
 

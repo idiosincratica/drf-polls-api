@@ -30,15 +30,14 @@ class Poll(models.Model):
 
 
 class Question(models.Model):
-    types = {
-        1: 'Text',
-        2: 'Single choice',
-        3: 'Multiple choices'
-    }
+    class Types(models.IntegerChoices):
+        TEXT = 1, 'Text'
+        SINGLE_CHOICE = 2, 'Single choice'
+        MULTIPLE_CHOICES = 3, 'Multiple choices'
 
     poll = models.ForeignKey(Poll, related_name='questions', on_delete=models.CASCADE)
     text = models.CharField('Question text', max_length=256)
-    type = models.PositiveSmallIntegerField('Type', choices=list(types.items()))
+    type = models.PositiveSmallIntegerField('Type', choices=Types.choices)
 
     class Meta:
         constraints = [
