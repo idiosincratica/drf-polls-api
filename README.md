@@ -1,5 +1,5 @@
 # drf-polls-api
-# Инструкция по разворачиванию приложения локально (Windows)
+# Инструкция по разворачиванию приложения локально
 Установить *Python*.  
 Создать виртуальное пространство.  
 Установить *Django*, *Django REST framework* (можно из `requirements.txt` или с помощью *Poetry*).  
@@ -7,6 +7,16 @@
 
     python manage.py migrate
 
+# Инструкция по разворачиванию приложения в *Docker*
+Установить *Docker*.
+Создать образ:
+    docker build -t <image name> .
+Создать и запустить контейнер из образа:
+    docker run --name <container name> -d -p <host port>:8000 <image name>
+Зайти в запущенный контейнер:
+    docker exec -it <container name> /bin/bash
+
+# Администрирование
 Создать суперпользователя:
 
     python manage.py createsuperuser --username=<username> --email=<email>
