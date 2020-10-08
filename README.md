@@ -8,12 +8,17 @@
     python manage.py migrate
 
 # Инструкция по разворачиванию приложения в *Docker*
-Установить *Docker*.
+Установить *Docker*.  
 Создать образ:
+
     docker build -t <image name> .
+
 Создать и запустить контейнер из образа:
+
     docker run --name <container name> -d -p <host port>:8000 <image name>
+
 Зайти в запущенный контейнер:
+
     docker exec -it <container name> /bin/bash
 
 # Администрирование
