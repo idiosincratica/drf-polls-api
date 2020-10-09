@@ -14,5 +14,4 @@ class ChoiceRetrieveUpdateDestroy(DestroyStartedMixin, AtomicUpdateMixin, generi
     permission_classes = [IsAdminUser]
     queryset = Choice.objects.all()
     serializer_class = ChoiceSerializer
-    destroy_started = (lambda instance: instance.question.poll,
-                       'Deleting choices referring to started polls is forbidden')
+    destroy_started = ('question.poll', 'Deleting choices referring to started polls is forbidden')

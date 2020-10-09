@@ -15,4 +15,4 @@ class QuestionRetrieveUpdateDestroy(DestroyStartedMixin, AtomicUpdateMixin, gene
     permission_classes = [IsAdminUserOrReadOnly]
     queryset = Question.objects.all()
     serializer_class = QuestionSerializer
-    destroy_started = (lambda instance: instance.poll, 'Deleting questions referring to started polls is forbidden')
+    destroy_started = ('poll', 'Deleting questions referring to started polls is forbidden')

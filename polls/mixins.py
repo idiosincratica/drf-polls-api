@@ -57,9 +57,21 @@ class DestroyStartedMixin:
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
+        poll = self.get_attribute(instance, self.destroy_started[0])
 
-        if poll_started(self.destroy_started[0](instance)):
+        if poll_started(poll):
             raise ParseError(self.destroy_started[1])
 
         self.perform_destroy(instance)
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @staticmethod
+    def get_attribute(instance, path):
+        """
+        Get nested attribute
+        """
+        attrs = path.split('.')
+        for attr in attrs:
+            instance = getattr(instance, attr)
+        return instance
+
