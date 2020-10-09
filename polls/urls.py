@@ -1,11 +1,12 @@
 from django.urls import path
 from rest_framework.authtoken import views
-from .views import default, poll, question, choice, response, user
+from .views import default, poll, question, choice, response
+from anonymous_auth.views import ObtainAnonymousToken
 
 urlpatterns = [
     path('', default.default, name='default'),
     path('token', views.obtain_auth_token, name='token'),
-    path('user', user.UserCreate.as_view(), name='user'),
+    path('anonymous-token', ObtainAnonymousToken.as_view(), name='anonymous_token'),
     path('polls', poll.PollList.as_view(), name='polls'),
     path('active-polls', poll.PollActiveList.as_view(), name='active_polls'),
     path('poll', poll.PollCreate.as_view(), name='poll'),
@@ -16,7 +17,8 @@ urlpatterns = [
     path('choice/<int:pk>', choice.ChoiceRetrieveUpdateDestroy.as_view(), name='choice_pk'),
     path('text-response', response.CreateTextResponse.as_view(), name='text_response'),
     path('single-choice-response', response.CreateSingleChoiceResponse.as_view(), name='single_choice_response'),
-    path('multiple-choices-response', response.CreateMultipleChoicesResponse.as_view(), name='multiple_choices_response'),
+    path('multiple-choices-response', response.CreateMultipleChoicesResponse.as_view(),
+         name='multiple_choices_response'),
     path('finished-polls', poll.PollFinishedListView.as_view(), name='finished_polls'),
     path('unfinished-polls', poll.PollUnfinishedListView.as_view(), name='unfinished_polls')
 ]

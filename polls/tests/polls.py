@@ -1,9 +1,10 @@
 from django.urls import reverse
-from django.utils.timezone import localdate
 from rest_framework.test import APITestCase
+from django.utils.timezone import localdate
 from datetime import timedelta
-from ..models import Poll, User, TextResponse, SingleChoiceResponse, MultipleChoicesResponse
-from .init import create_admin, populate_db, get_started_poll, get_pending_poll
+from ..models import Poll, TextResponse, SingleChoiceResponse, MultipleChoicesResponse
+from anonymous_auth.models import User
+from .init import create_admin, populate_db, get_started_poll, AuthenitcateAnonymousUserMixin
 
 def populate_db_one_finished_poll():
     User().save()
@@ -53,9 +54,13 @@ def populate_db_one_finished_one_unfinished_poll():
     }).save()
 
 
-class PollsTests(APITestCase):
+class PollsTests(AuthenitcateAnonymousUserMixin, APITestCase):
     def setUp(self):
         self.admin = create_admin()
+
+    def authenticate_first_user(self):
+        user = User.objects.get(pk=1)
+        self.client.credentials(HTTP_AUTHORIZATION='Anonymous ' + user.key)
 
     def test_active_polls_empty(self):
         url = reverse('active_polls')
@@ -99,76 +104,84 @@ class PollsTests(APITestCase):
         populate_db()
         populate_db_one_finished_poll()
         url = reverse('finished_polls')
-        response = self.client.get(url, data={'user': 1})
+        self.authenticate_first_user()
+        response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 1)
 
     def test_finished_with_two_finished(self):
         populate_db()
         populate_db_two_finished_polls()
+        self.authenticate_first_user()
         url = reverse('finished_polls')
-        response = self.client.get(url, data={'user': 1})
+        response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 2)
 
     def test_finished_with_one_finished_one_unfinished(self):
         populate_db()
         populate_db_one_finished_one_unfinished_poll()
+        self.authenticate_first_user()
         url = reverse('finished_polls')
-        response = self.client.get(url, data={'user': 1})
+        response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 1)
 
     def test_finished_with_nothing_finished(self):
         populate_db()
         User().save()
+        self.authenticate_anonymous_user()
         url = reverse('finished_polls')
-        response = self.client.get(url, data={'user': 1})
+        response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 0)
 
     def test_unfinished_with_nothing_finished(self):
         populate_db()
         User().save()
+        self.authenticate_anonymous_user()
         url = reverse('unfinished_polls')
-        response = self.client.get(url, data={'user': 1})
+        response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 0)
 
     def test_unfinished_with_one_finished(self):
         populate_db()
         User().save()
+        self.authenticate_anonymous_user()
         populate_db_one_finished_poll()
         url = reverse('unfinished_polls')
-        response = self.client.get(url, data={'user': 1})
+        response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 0)
 
     def test_unfinished_with_two_finished(self):
         populate_db()
         User().save()
+        self.authenticate_anonymous_user()
         populate_db_two_finished_polls()
         url = reverse('unfinished_polls')
-        response = self.client.get(url, data={'user': 1})
+        response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 0)
 
     def test_unfinished_with_one_finished_one_unfinished(self):
         populate_db()
         populate_db_one_finished_one_unfinished_poll()
+        self.authenticate_first_user()
         url = reverse('unfinished_polls')
-        response = self.client.get(url, data={'user': 1})
+        response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 1)
 
-    def test_finished_user_does_not_exist(self):
+    def test_finished_not_authenticated(self):
         populate_db()
         url = reverse('finished_polls')
         response = self.client.get(url, data={'user': 1})
-        self.assertContains(response, 'does not exist', status_code=400)
+        self.assertContains(response, 'not_authenticated', status_code=401)
 
-    def test_unfinished_user_does_not_exist(self):
+    def test_unfinished_not_authenticated(self):
         populate_db()
         url = reverse('unfinished_polls')
         response = self.client.get(url, data={'user': 1})
-        self.assertContains(response, 'does not exist', status_code=400)
+        self.assertContains(response, 'not_authenticated', status_code=401)

@@ -34,3 +34,13 @@ validate_poll_active = base_validate_poll_active(not_started="The poll has not s
                                                  expired="The poll has expired")
 validate_referred_poll_active = base_validate_poll_active(not_started="The referred poll has not started yet",
                                                           expired="The referred poll has expired")
+
+
+def get_attribute(instance, path):
+    """
+    Get nested attribute given a string representing its path
+    """
+    attrs = path.split('.')
+    for attr in attrs:
+        instance = getattr(instance, attr)
+    return instance

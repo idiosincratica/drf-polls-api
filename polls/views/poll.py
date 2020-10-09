@@ -3,9 +3,11 @@ from rest_framework.permissions import IsAdminUser
 from django.utils.timezone import localdate
 from django.db.models import Q, OuterRef, Exists
 from ..serializers.poll import PollSerializer, PollListSerializer, PollFinishedListSerializer
-from ..models import Poll, User, Question
+from ..models import Poll, Question
+from anonymous_auth.models import User
 from ..permissions import IsAdminUserOrReadOnly
-from ..mixins import RequestParamObjectMixin, AtomicUpdateMixin
+from anonymous_auth.permissions import IsAnonymousUserWithCredentials
+from ..mixins import AtomicUpdateMixin
 
 
 class PollList(generics.ListAPIView):
@@ -33,10 +35,11 @@ class PollRetrieveUpdateDestroy(AtomicUpdateMixin, generics.RetrieveUpdateDestro
     serializer_class = PollSerializer
 
 
-class BasePollRespondedListView(generics.ListAPIView, RequestParamObjectMixin):
+class BasePollRespondedListView(generics.ListAPIView):
     """
     Collect data for construction of querysets that provide finish and unfinished polls
     """
+    permission_classes = [IsAnonymousUserWithCredentials]
     serializer_class = PollFinishedListSerializer
 
     def get_user_polls_query(self, user):
@@ -56,7 +59,7 @@ class BasePollRespondedListView(generics.ListAPIView, RequestParamObjectMixin):
                                              | Q(text_responses__user=user))
 
     def get_query_elements(self):
-        user = self.get_object_from_param('user', User)
+        user = self.request.auth
 
         return {
             'user': user,

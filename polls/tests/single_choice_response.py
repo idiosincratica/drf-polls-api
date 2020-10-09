@@ -1,37 +1,34 @@
 from django.urls import reverse
 from rest_framework.test import APITestCase
-from ..models import User
-from .init import populate_db
+from rest_framework import status
+from anonymous_auth.models import User
+from .init import populate_db, AuthenitcateAnonymousUserMixin
 
 
-class SingleChoiceResponseTests(APITestCase):
+class SingleChoiceResponseTests(AuthenitcateAnonymousUserMixin, APITestCase):
     def test_ok(self):
         populate_db()
-        User().save()
+        self.authenticate_anonymous_user()
         data = {
-            "user": 1,
             "choice": 1
         }
         url = reverse('single_choice_response')
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, 201)
 
-    def test_bad_user(self):
+    def test_not_authenticated(self):
         populate_db()
-        User().save()
         data = {
-            "user": 100,
             "choice": 1
         }
         url = reverse('single_choice_response')
         response = self.client.post(url, data)
-        self.assertContains(response, 'does not exist', status_code=400)
+        self.assertContains(response, 'not_authenticated', status_code=status.HTTP_401_UNAUTHORIZED)
 
     def test_started(self):
         populate_db()
-        User().save()
+        self.authenticate_anonymous_user()
         data = {
-            "user": 1,
             "choice": 10
         }
         url = reverse('single_choice_response')
@@ -40,9 +37,8 @@ class SingleChoiceResponseTests(APITestCase):
 
     def test_duplicate(self):
         populate_db()
-        User().save()
+        self.authenticate_anonymous_user()
         data = {
-            "user": 1,
             "choice": 1
         }
         url = reverse('single_choice_response')
@@ -52,9 +48,8 @@ class SingleChoiceResponseTests(APITestCase):
 
     def test_others_choice(self):
         populate_db()
-        User().save()
+        self.authenticate_anonymous_user()
         data = {
-            "user": 1,
             "choice": 5
         }
         url = reverse('single_choice_response')
@@ -63,9 +58,8 @@ class SingleChoiceResponseTests(APITestCase):
 
     def test_question_type(self):
         populate_db()
-        User().save()
+        self.authenticate_anonymous_user()
         data = {
-            "user": 1,
             "choice": 5
         }
         url = reverse('single_choice_response')

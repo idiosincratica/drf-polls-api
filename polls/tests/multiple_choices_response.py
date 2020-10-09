@@ -1,15 +1,14 @@
 from django.urls import reverse
 from rest_framework.test import APITestCase
-from ..models import User
-from .init import populate_db
+from anonymous_auth.models import User
+from .init import populate_db, AuthenitcateAnonymousUserMixin
 
 
-class MultipleChoicesResponseTests(APITestCase):
+class MultipleChoicesResponseTests(AuthenitcateAnonymousUserMixin, APITestCase):
     def test_multi_not_exist(self):
         populate_db()
-        User().save()
+        self.authenticate_anonymous_user()
         data = {
-            "user": 1,
             "choices": [90]
         }
         url = reverse('multiple_choices_response')
@@ -18,9 +17,8 @@ class MultipleChoicesResponseTests(APITestCase):
 
     def test_ok(self):
         populate_db()
-        User().save()
+        self.authenticate_anonymous_user()
         data = {
-            "user": 1,
             "choices": [5, 6]
         }
         url = reverse('multiple_choices_response')
@@ -29,40 +27,41 @@ class MultipleChoicesResponseTests(APITestCase):
 
     def test_started(self):
         populate_db()
-        User().save()
+        self.authenticate_anonymous_user()
         data = {
-            "user": 1,
             "choices": [8]
         }
         url = reverse('multiple_choices_response')
         response = self.client.post(url, data)
         self.assertContains(response, "The referred poll has not started yet", status_code=400)
 
-    def test_nonexistent_user(self):
+    def test_not_authenticated_user(self):
         populate_db()
-        User().save()
         data = {
-            "user": 100,
             "choices": [5, 6]
         }
         url = reverse('multiple_choices_response')
         response = self.client.post(url, data)
-        self.assertContains(response, 'User does not exist', status_code=400)
+        self.assertContains(response, 'not_authenticated', status_code=401)
 
-    def test_malformed_user(self):
+    def test_nonexistent_token(self):
         populate_db()
-        User().save()
+        user = User.objects.create()
+        token = user.key
+        user.delete()
+        user = User.objects.create()
+        assert(token != user.key)
+        self.client.credentials(HTTP_AUTHORIZATION='Anonymous ' + token)
         data = {
-            "user": "what?",
             "choices": [5, 6]
         }
         url = reverse('multiple_choices_response')
         response = self.client.post(url, data)
-        self.assertContains(response, 'A valid integer is required', status_code=400)
+        self.assertContains(response, 'authentication_failed', status_code=401)
 
     def test_empty_choices(self):
         populate_db()
-        User().save()
+        self.authenticate_anonymous_user()
         data = {
             "user": 1,
             "choices": []
@@ -73,7 +72,7 @@ class MultipleChoicesResponseTests(APITestCase):
 
     def test_inexistent_choices(self):
         populate_db()
-        User().save()
+        self.authenticate_anonymous_user()
         data = {
             "user": 1,
             "choices": [8465, 8825]
@@ -84,7 +83,7 @@ class MultipleChoicesResponseTests(APITestCase):
 
     def test_singular_question(self):
         populate_db()
-        User().save()
+        self.authenticate_anonymous_user()
         data = {
             "user": 1,
             "choices": [5, 7]
@@ -95,7 +94,7 @@ class MultipleChoicesResponseTests(APITestCase):
 
     def test_question_already_set(self):
         populate_db()
-        User().save()
+        self.authenticate_anonymous_user()
         data = {
             "user": 1,
             "choices": [5]
@@ -111,7 +110,7 @@ class MultipleChoicesResponseTests(APITestCase):
 
     def test_question_type(self):
         populate_db()
-        User().save()
+        self.authenticate_anonymous_user()
         data = {
             "user": 1,
             "choices": [2]
@@ -122,7 +121,7 @@ class MultipleChoicesResponseTests(APITestCase):
 
     def test_ended_poll(self):
         populate_db()
-        User().save()
+        self.authenticate_anonymous_user()
         data = {
             "user": 1,
             "choices": [9]

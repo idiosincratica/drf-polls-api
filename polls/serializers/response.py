@@ -2,15 +2,20 @@ from rest_framework import serializers
 from rest_framework.exceptions import APIException
 from rest_framework.validators import UniqueTogetherValidator
 from django.db.utils import IntegrityError
-from ..models import TextResponse, SingleChoiceResponse, MultipleChoicesResponse, Choice, User, Question
+from ..models import TextResponse, SingleChoiceResponse, MultipleChoicesResponse, Choice, Question
+from anonymous_auth.models import User
 from ..helpers import validate_referred_poll_active, render_list
 from polls import error_codes
 
 
 class TextResponseSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = TextResponse
         fields = ['user', 'question', 'text']
+        extra_kwargs = {
+            'user': {'write_only': True}
+        }
 
         validators = [
             UniqueTogetherValidator(
@@ -34,6 +39,9 @@ class SingleChoiceResponseSerializer(serializers.ModelSerializer):
     class Meta:
         model = SingleChoiceResponse
         fields = ['user', 'choice']
+        extra_kwargs = {
+            'user': {'write_only': True}
+        }
 
         validators = [
             UniqueTogetherValidator(
@@ -68,7 +76,7 @@ class SingleChoiceResponseSerializer(serializers.ModelSerializer):
 
 
 class MultipleChoicesResponseSerializer(serializers.Serializer):
-    user = serializers.IntegerField()
+    user = serializers.IntegerField(write_only=True)
     choices = serializers.ListField(child=serializers.IntegerField())
 
     def create_user(self, user):

@@ -1,15 +1,14 @@
 from django.urls import reverse
 from rest_framework.test import APITestCase
-from ..models import User
-from .init import populate_db
+from anonymous_auth.models import User
+from .init import populate_db, AuthenitcateAnonymousUserMixin
 
 
-class TextResponseTests(APITestCase):
+class TextResponseTests(AuthenitcateAnonymousUserMixin, APITestCase):
     def test_ok(self):
         populate_db()
-        User().save()
+        self.authenticate_anonymous_user()
         data = {
-            "user": 1,
             "question": 1,
             "text": "hello"
         }
@@ -17,35 +16,32 @@ class TextResponseTests(APITestCase):
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, 201)
 
-    def test_nonexistent_user(self):
+    def test_not_authenticated_anonymous(self):
         populate_db()
-        User().save()
         data = {
-            "user": 100,
             "question": 1,
             "text": "i'm here"
         }
         url = reverse('text_response')
         response = self.client.post(url, data)
-        self.assertContains(response, 'does not exist', status_code=400)
+        self.assertContains(response, 'not_authenticated', status_code=401)
 
-    def test_malformed_user(self):
+    def test_malformed_token(self):
         populate_db()
-        User().save()
+        user = User.objects.create()
+        self.client.credentials(HTTP_AUTHORIZATION='Anonymous ' + user.key[3:])
         data = {
-            "user": "joke",
             "question": 1,
             "text": "i'm here"
         }
         url = reverse('text_response')
         response = self.client.post(url, data)
-        self.assertContains(response, 'Incorrect type. Expected pk value, received str', status_code=400)
+        self.assertContains(response, 'authentication_failed', status_code=401)
 
     def test_started(self):
         populate_db()
-        User().save()
+        self.authenticate_anonymous_user()
         data = {
-            "user": 1,
             "question": 3,
             "text": "hehe"
         }
@@ -55,7 +51,7 @@ class TextResponseTests(APITestCase):
 
     def test_duplicate(self):
         populate_db()
-        User().save()
+        self.authenticate_anonymous_user()
         data = {
             "user": 1,
             "question": 1,
@@ -68,7 +64,7 @@ class TextResponseTests(APITestCase):
 
     def test_question_type(self):
         populate_db()
-        User().save()
+        self.authenticate_anonymous_user()
         data = {
             "user": 1,
             "question": 2,

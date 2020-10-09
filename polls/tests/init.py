@@ -2,11 +2,18 @@ from django.contrib.auth import get_user_model
 from django.utils.timezone import localdate
 from datetime import timedelta
 from ..models import Poll, Question, Choice
+from anonymous_auth.models import User
 
 
 def create_admin():
     User = get_user_model()
     return User.objects.create_user('admin', 'admin@test.com', '1', is_staff=True)
+
+
+class AuthenitcateAnonymousUserMixin:
+    def authenticate_anonymous_user(self):
+        user = User.objects.create()
+        self.client.credentials(HTTP_AUTHORIZATION='Anonymous ' + user.key)
 
 
 def get_started_poll():
