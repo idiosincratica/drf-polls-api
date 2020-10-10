@@ -11,19 +11,19 @@ class ChoiceTests(APITestCase):
     def test_delete_started(self):
         populate_db()
         self.auth_admin()
-        response = self.client.delete(reverse('choice_pk', args=[1]))
+        response = self.client.delete(reverse('choice-detail', args=[1]))
         self.assertContains(response, 'Deleting choices referring to started polls is forbidden', status_code=400)
 
     def test_delete_ok(self):
         populate_db()
         self.auth_admin()
-        response = self.client.delete(reverse('choice_pk', args=[7]))
+        response = self.client.delete(reverse('choice-detail', args=[7]))
         self.assertEqual(response.status_code, 204)
 
     def test_create_ok(self):
         populate_db()
         self.auth_admin()
-        url = reverse('choice')
+        url = reverse('choice-list')
         data = {
             "question": 4,
             "text": "something here"
@@ -36,7 +36,7 @@ class ChoiceTests(APITestCase):
     def test_create_started(self):
         populate_db()
         self.auth_admin()
-        url = reverse('choice')
+        url = reverse('choice-list')
         data = {
             "question": 2,
             "text": "so"
@@ -47,7 +47,7 @@ class ChoiceTests(APITestCase):
     def test_update_started(self):
         populate_db()
         self.auth_admin()
-        url = reverse('choice_pk', args=[4])
+        url = reverse('choice-detail', args=[4])
         data = {
             "text": "sojsjhasdf"
         }
@@ -58,7 +58,7 @@ class ChoiceTests(APITestCase):
     def test_update_pending_to_started(self):
         populate_db()
         self.auth_admin()
-        url = reverse('choice_pk', args=[6])
+        url = reverse('choice-detail', args=[6])
         data = {
             "question": 5
         }
@@ -69,7 +69,7 @@ class ChoiceTests(APITestCase):
     def test_create_duplicate(self):
         populate_db()
         self.auth_admin()
-        url = reverse('choice')
+        url = reverse('choice-list')
         data = {
             "question": 4,
             "text": "so"
@@ -82,7 +82,7 @@ class ChoiceTests(APITestCase):
     def test_update_duplicate(self):
         populate_db()
         self.auth_admin()
-        url = reverse('choice')
+        url = reverse('choice-list')
         data = {
             "question": 6,
             "text": "multi choice 1"

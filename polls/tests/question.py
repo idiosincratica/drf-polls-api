@@ -14,19 +14,19 @@ class QuestionTests(APITestCase):
     def test_delete_started(self):
         populate_db()
         self.auth_admin()
-        response = self.client.delete(reverse('question_pk', args=[1]))
+        response = self.client.delete(reverse('question-detail', args=[1]))
         self.assertContains(response, 'Deleting questions referring to started polls is forbidden', status_code=400)
 
     def test_delete_ok(self):
         populate_db()
         self.auth_admin()
-        response = self.client.delete(reverse('question_pk', args=[3]))
+        response = self.client.delete(reverse('question-detail', args=[3]))
         self.assertEqual(response.status_code, 204)
 
     def test_create_ok(self):
         populate_db()
         self.auth_admin()
-        url = reverse('question')
+        url = reverse('question-list')
         data = {
             "poll": 2,
             "text": "something here",
@@ -40,7 +40,7 @@ class QuestionTests(APITestCase):
     def test_create_started(self):
         populate_db()
         self.auth_admin()
-        url = reverse('question')
+        url = reverse('question-list')
         data = {
             "poll": 1,
             "text": "so",
@@ -52,7 +52,7 @@ class QuestionTests(APITestCase):
     def test_update_started(self):
         populate_db()
         self.auth_admin()
-        url = reverse('question_pk', args=[5])
+        url = reverse('question-detail', args=[5])
         data = {
             "text": "sjfdo",
             "type": 1
@@ -64,7 +64,7 @@ class QuestionTests(APITestCase):
     def test_update_to_started(self):
         populate_db()
         self.auth_admin()
-        url = reverse('question_pk', args=[6])
+        url = reverse('question-detail', args=[6])
         data = {
             "poll": 1
         }
@@ -75,7 +75,7 @@ class QuestionTests(APITestCase):
     def test_create_duplicate(self):
         populate_db()
         self.auth_admin()
-        url = reverse('question')
+        url = reverse('question-list')
         data = {
             "poll": 2,
             "text": "so",
@@ -90,7 +90,7 @@ class QuestionTests(APITestCase):
     def test_update_duplicate(self):
         populate_db()
         self.auth_admin()
-        url = reverse('question')
+        url = reverse('question-list')
         data = {
             "poll": 2,
             "text": "pending poll multiple choices question",

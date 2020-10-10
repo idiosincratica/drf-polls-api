@@ -12,7 +12,7 @@ class TextResponseTests(AuthenitcateAnonymousUserMixin, APITestCase):
             "question": 1,
             "text": "hello"
         }
-        url = reverse('text_response')
+        url = reverse('text_response-list')
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, 201)
 
@@ -22,7 +22,7 @@ class TextResponseTests(AuthenitcateAnonymousUserMixin, APITestCase):
             "question": 1,
             "text": "i'm here"
         }
-        url = reverse('text_response')
+        url = reverse('text_response-list')
         response = self.client.post(url, data)
         self.assertContains(response, 'not_authenticated', status_code=401)
 
@@ -34,7 +34,7 @@ class TextResponseTests(AuthenitcateAnonymousUserMixin, APITestCase):
             "question": 1,
             "text": "i'm here"
         }
-        url = reverse('text_response')
+        url = reverse('text_response-list')
         response = self.client.post(url, data)
         self.assertContains(response, 'authentication_failed', status_code=401)
 
@@ -45,7 +45,7 @@ class TextResponseTests(AuthenitcateAnonymousUserMixin, APITestCase):
             "question": 3,
             "text": "hehe"
         }
-        url = reverse('text_response')
+        url = reverse('text_response-list')
         response = self.client.post(url, data)
         self.assertContains(response, "The referred poll has not started yet", status_code=400)
 
@@ -57,7 +57,7 @@ class TextResponseTests(AuthenitcateAnonymousUserMixin, APITestCase):
             "question": 1,
             "text": "that's it"
         }
-        url = reverse('text_response')
+        url = reverse('text_response-list')
         response = self.client.post(url, data)
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, 400)
@@ -70,6 +70,6 @@ class TextResponseTests(AuthenitcateAnonymousUserMixin, APITestCase):
             "question": 2,
             "text": "some text"
         }
-        url = reverse('text_response')
+        url = reverse('text_response-list')
         response = self.client.post(url, data)
         self.assertContains(response, 'Question must be of type 1', status_code=400)

@@ -63,7 +63,7 @@ class PollsTests(AuthenitcateAnonymousUserMixin, APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION='Anonymous ' + user.key)
 
     def test_active_polls_empty(self):
-        url = reverse('active_polls')
+        url = reverse('active_polls-list')
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data, [])
@@ -79,7 +79,7 @@ class PollsTests(AuthenitcateAnonymousUserMixin, APITestCase):
             "description": "jj"
         }
         Poll(**data).save()
-        url = reverse('active_polls')
+        url = reverse('active_polls-list')
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data, [{
@@ -96,14 +96,14 @@ class PollsTests(AuthenitcateAnonymousUserMixin, APITestCase):
         poll = get_started_poll()
         poll['description'] = 'changed'
         poll['start'] = localdate() + timedelta(days=1)
-        url = reverse('poll_pk', args=[1])
+        url = reverse('poll-detail', args=[1])
         response = self.client.put(url, poll)
         self.assertEqual(response.status_code, 400)
 
     def test_finished_with_one_finished(self):
         populate_db()
         populate_db_one_finished_poll()
-        url = reverse('finished_polls')
+        url = reverse('finished_polls-list')
         self.authenticate_first_user()
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
@@ -113,7 +113,7 @@ class PollsTests(AuthenitcateAnonymousUserMixin, APITestCase):
         populate_db()
         populate_db_two_finished_polls()
         self.authenticate_first_user()
-        url = reverse('finished_polls')
+        url = reverse('finished_polls-list')
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 2)
@@ -122,7 +122,7 @@ class PollsTests(AuthenitcateAnonymousUserMixin, APITestCase):
         populate_db()
         populate_db_one_finished_one_unfinished_poll()
         self.authenticate_first_user()
-        url = reverse('finished_polls')
+        url = reverse('finished_polls-list')
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 1)
@@ -131,7 +131,7 @@ class PollsTests(AuthenitcateAnonymousUserMixin, APITestCase):
         populate_db()
         User().save()
         self.authenticate_anonymous_user()
-        url = reverse('finished_polls')
+        url = reverse('finished_polls-list')
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 0)
@@ -140,7 +140,7 @@ class PollsTests(AuthenitcateAnonymousUserMixin, APITestCase):
         populate_db()
         User().save()
         self.authenticate_anonymous_user()
-        url = reverse('unfinished_polls')
+        url = reverse('unfinished_polls-list')
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 0)
@@ -150,7 +150,7 @@ class PollsTests(AuthenitcateAnonymousUserMixin, APITestCase):
         User().save()
         self.authenticate_anonymous_user()
         populate_db_one_finished_poll()
-        url = reverse('unfinished_polls')
+        url = reverse('unfinished_polls-list')
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 0)
@@ -160,7 +160,7 @@ class PollsTests(AuthenitcateAnonymousUserMixin, APITestCase):
         User().save()
         self.authenticate_anonymous_user()
         populate_db_two_finished_polls()
-        url = reverse('unfinished_polls')
+        url = reverse('unfinished_polls-list')
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 0)
@@ -169,19 +169,19 @@ class PollsTests(AuthenitcateAnonymousUserMixin, APITestCase):
         populate_db()
         populate_db_one_finished_one_unfinished_poll()
         self.authenticate_first_user()
-        url = reverse('unfinished_polls')
+        url = reverse('unfinished_polls-list')
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 1)
 
     def test_finished_not_authenticated(self):
         populate_db()
-        url = reverse('finished_polls')
+        url = reverse('finished_polls-list')
         response = self.client.get(url, data={'user': 1})
         self.assertContains(response, 'not_authenticated', status_code=401)
 
     def test_unfinished_not_authenticated(self):
         populate_db()
-        url = reverse('unfinished_polls')
+        url = reverse('unfinished_polls-list')
         response = self.client.get(url, data={'user': 1})
         self.assertContains(response, 'not_authenticated', status_code=401)

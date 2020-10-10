@@ -1,24 +1,25 @@
-from django.urls import path
+from django.urls import path, include
 from rest_framework.authtoken import views
-from .views import default, poll, question, choice, response
+from rest_framework.routers import DefaultRouter
 from anonymous_auth.views import ObtainAnonymousToken
+from polls import viewsets
+
+router = DefaultRouter(trailing_slash=False)
+
+router.register('polls', viewsets.PollListViewSet, basename='polls')
+router.register('active-polls', viewsets.PollActiveListViewSet, basename='active_polls')
+router.register('poll', viewsets.PollViewSet, basename='poll')
+router.register('question', viewsets.QuestionViewSet, basename='question')
+router.register('choice', viewsets.ChoiceViewSet, basename='choice')
+router.register('text-response', viewsets.TextResponseViewSet, basename='text_response')
+router.register('single-choice-response', viewsets.SingleChoiceResponseViewSet, basename='single_choice_response')
+router.register('multiple-choices-response', viewsets.MultipleChoicesResponseViewSet,
+                basename='multiple_choices_response')
+router.register('finished-polls', viewsets.PollFinishedListViewSet, basename='finished_polls')
+router.register('unfinished-polls', viewsets.PollUnfinishedListViewSet, basename='unfinished_polls')
 
 urlpatterns = [
-    path('', default.default, name='default'),
     path('token', views.obtain_auth_token, name='token'),
     path('anonymous-token', ObtainAnonymousToken.as_view(), name='anonymous_token'),
-    path('polls', poll.PollList.as_view(), name='polls'),
-    path('active-polls', poll.PollActiveList.as_view(), name='active_polls'),
-    path('poll', poll.PollCreate.as_view(), name='poll'),
-    path('poll/<int:pk>', poll.PollRetrieveUpdateDestroy.as_view(), name='poll_pk'),
-    path('question', question.QuestionCreate.as_view(), name='question'),
-    path('question/<int:pk>', question.QuestionRetrieveUpdateDestroy.as_view(), name='question_pk'),
-    path('choice', choice.ChoiceCreate.as_view(), name='choice'),
-    path('choice/<int:pk>', choice.ChoiceRetrieveUpdateDestroy.as_view(), name='choice_pk'),
-    path('text-response', response.CreateTextResponse.as_view(), name='text_response'),
-    path('single-choice-response', response.CreateSingleChoiceResponse.as_view(), name='single_choice_response'),
-    path('multiple-choices-response', response.CreateMultipleChoicesResponse.as_view(),
-         name='multiple_choices_response'),
-    path('finished-polls', poll.PollFinishedListView.as_view(), name='finished_polls'),
-    path('unfinished-polls', poll.PollUnfinishedListView.as_view(), name='unfinished_polls')
+    path('', include(router.urls))
 ]

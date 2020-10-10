@@ -1,22 +1,21 @@
-from rest_framework import generics
+from rest_framework.viewsets import GenericViewSet, mixins
 from rest_framework.permissions import IsAdminUser
 from django.utils.timezone import localdate
 from django.db.models import Q, OuterRef, Exists
 from ..serializers.poll import PollSerializer, PollListSerializer, PollFinishedListSerializer
 from ..models import Poll, Question
-from anonymous_auth.models import User
 from ..permissions import IsAdminUserOrReadOnly
 from anonymous_auth.permissions import IsAnonymousUserWithCredentials
 from ..mixins import AtomicUpdateMixin
 
 
-class PollList(generics.ListAPIView):
+class PollListViewSet(mixins.ListModelMixin, GenericViewSet):
     permission_classes = [IsAdminUser]
     serializer_class = PollListSerializer
     queryset = Poll.objects.all()
 
 
-class PollActiveList(generics.ListAPIView):
+class PollActiveListViewSet(mixins.ListModelMixin, GenericViewSet):
     serializer_class = PollListSerializer
 
     def get_queryset(self):
@@ -24,18 +23,18 @@ class PollActiveList(generics.ListAPIView):
         return Poll.objects.filter(start__lte=today, end__gt=today)
 
 
-class PollCreate(generics.CreateAPIView):
-    permission_classes = [IsAdminUser]
-    serializer_class = PollSerializer
-
-
-class PollRetrieveUpdateDestroy(AtomicUpdateMixin, generics.RetrieveUpdateDestroyAPIView):
+class PollViewSet(AtomicUpdateMixin,
+                  mixins.CreateModelMixin,
+                  mixins.RetrieveModelMixin,
+                  mixins.UpdateModelMixin,
+                  mixins.DestroyModelMixin,
+                  GenericViewSet):
     permission_classes = [IsAdminUserOrReadOnly]
-    queryset = Poll.objects.all()
     serializer_class = PollSerializer
+    queryset = Poll.objects.all()
 
 
-class BasePollRespondedListView(generics.ListAPIView):
+class BasePollRespondedListViewSet(mixins.ListModelMixin, GenericViewSet):
     """
     Collect data for construction of querysets that provide finish and unfinished polls
     """
@@ -55,8 +54,8 @@ class BasePollRespondedListView(generics.ListAPIView):
         Select all the questions with no response
         """
         return Question.objects.filter(poll=OuterRef('pk')).exclude(Q(choices__single_choice_responses__user=user)
-                                       | Q(choices__multiple_choices_responses__user=user)
-                                             | Q(text_responses__user=user))
+                                                                    | Q(choices__multiple_choices_responses__user=user)
+                                                                    | Q(text_responses__user=user))
 
     def get_query_elements(self):
         user = self.request.auth
@@ -68,11 +67,10 @@ class BasePollRespondedListView(generics.ListAPIView):
         }
 
 
-class PollFinishedListView(BasePollRespondedListView):
+class PollFinishedListViewSet(BasePollRespondedListViewSet):
     """
     Polls with every question being responded by the user
     """
-
     def get_queryset(self):
         elements = self.get_query_elements()
 
@@ -80,11 +78,10 @@ class PollFinishedListView(BasePollRespondedListView):
         return elements['user_polls_query'].exclude(Exists(elements['no_response_subquery'])).distinct()
 
 
-class PollUnfinishedListView(PollFinishedListView):
+class PollUnfinishedListViewSet(PollFinishedListViewSet):
     """
     Polls that have some questions not responded by the user
     """
-
     def get_queryset(self):
         elements = self.get_query_elements()
 

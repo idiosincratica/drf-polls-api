@@ -11,7 +11,7 @@ class MultipleChoicesResponseTests(AuthenitcateAnonymousUserMixin, APITestCase):
         data = {
             "choices": [90]
         }
-        url = reverse('multiple_choices_response')
+        url = reverse('multiple_choices_response-list')
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, 400)
 
@@ -21,7 +21,7 @@ class MultipleChoicesResponseTests(AuthenitcateAnonymousUserMixin, APITestCase):
         data = {
             "choices": [5, 6]
         }
-        url = reverse('multiple_choices_response')
+        url = reverse('multiple_choices_response-list')
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, 201)
 
@@ -31,7 +31,7 @@ class MultipleChoicesResponseTests(AuthenitcateAnonymousUserMixin, APITestCase):
         data = {
             "choices": [8]
         }
-        url = reverse('multiple_choices_response')
+        url = reverse('multiple_choices_response-list')
         response = self.client.post(url, data)
         self.assertContains(response, "The referred poll has not started yet", status_code=400)
 
@@ -40,7 +40,7 @@ class MultipleChoicesResponseTests(AuthenitcateAnonymousUserMixin, APITestCase):
         data = {
             "choices": [5, 6]
         }
-        url = reverse('multiple_choices_response')
+        url = reverse('multiple_choices_response-list')
         response = self.client.post(url, data)
         self.assertContains(response, 'not_authenticated', status_code=401)
 
@@ -55,7 +55,7 @@ class MultipleChoicesResponseTests(AuthenitcateAnonymousUserMixin, APITestCase):
         data = {
             "choices": [5, 6]
         }
-        url = reverse('multiple_choices_response')
+        url = reverse('multiple_choices_response-list')
         response = self.client.post(url, data)
         self.assertContains(response, 'authentication_failed', status_code=401)
 
@@ -66,7 +66,7 @@ class MultipleChoicesResponseTests(AuthenitcateAnonymousUserMixin, APITestCase):
             "user": 1,
             "choices": []
         }
-        url = reverse('multiple_choices_response')
+        url = reverse('multiple_choices_response-list')
         response = self.client.post(url, data)
         self.assertContains(response, 'Choices list must not be empty', status_code=400)
 
@@ -77,7 +77,7 @@ class MultipleChoicesResponseTests(AuthenitcateAnonymousUserMixin, APITestCase):
             "user": 1,
             "choices": [8465, 8825]
         }
-        url = reverse('multiple_choices_response')
+        url = reverse('multiple_choices_response-list')
         response = self.client.post(url, data)
         self.assertContains(response, f'Some choices don\'t exist: 8465, 8825', status_code=400)
 
@@ -88,7 +88,7 @@ class MultipleChoicesResponseTests(AuthenitcateAnonymousUserMixin, APITestCase):
             "user": 1,
             "choices": [5, 7]
         }
-        url = reverse('multiple_choices_response')
+        url = reverse('multiple_choices_response-list')
         response = self.client.post(url, data)
         self.assertContains(response, f'All choices must refer to one question. Referred questions: 5, 6', status_code=400)
 
@@ -99,7 +99,7 @@ class MultipleChoicesResponseTests(AuthenitcateAnonymousUserMixin, APITestCase):
             "user": 1,
             "choices": [5]
         }
-        url = reverse('multiple_choices_response')
+        url = reverse('multiple_choices_response-list')
         response = self.client.post(url, data)
         data = {
             "user": 1,
@@ -115,7 +115,7 @@ class MultipleChoicesResponseTests(AuthenitcateAnonymousUserMixin, APITestCase):
             "user": 1,
             "choices": [2]
         }
-        url = reverse('multiple_choices_response')
+        url = reverse('multiple_choices_response-list')
         response = self.client.post(url, data)
         self.assertContains(response, 'The referred question must be of type 3', status_code=400)
 
@@ -126,6 +126,6 @@ class MultipleChoicesResponseTests(AuthenitcateAnonymousUserMixin, APITestCase):
             "user": 1,
             "choices": [9]
         }
-        url = reverse('multiple_choices_response')
+        url = reverse('multiple_choices_response-list')
         response = self.client.post(url, data)
         self.assertContains(response, 'The referred poll has expired', status_code=400)

@@ -1,17 +1,16 @@
-from rest_framework import generics
-from rest_framework.permissions import IsAdminUser
+from rest_framework.viewsets import GenericViewSet, mixins
 from ..serializers.question import QuestionSerializer
 from ..models import Question
 from ..permissions import IsAdminUserOrReadOnly
 from ..mixins import AtomicUpdateMixin, AtomicCreateMixin, DestroyStartedMixin
 
 
-class QuestionCreate(AtomicCreateMixin, generics.CreateAPIView):
-    permission_classes = [IsAdminUser]
-    serializer_class = QuestionSerializer
-
-
-class QuestionRetrieveUpdateDestroy(DestroyStartedMixin, AtomicUpdateMixin, generics.RetrieveUpdateDestroyAPIView):
+class QuestionViewSet(DestroyStartedMixin, AtomicUpdateMixin, AtomicCreateMixin,
+                      mixins.CreateModelMixin,
+                      mixins.RetrieveModelMixin,
+                      mixins.UpdateModelMixin,
+                      mixins.DestroyModelMixin,
+                      GenericViewSet):
     permission_classes = [IsAdminUserOrReadOnly]
     queryset = Question.objects.all()
     serializer_class = QuestionSerializer
